@@ -34,12 +34,12 @@ import scala.io.Source
       if cleaned.startsWith("buy") then
         val parts = cleaned.split("\\s+")
         if parts.length >= 4 then
-          //HandleBuy(parts(1), parts(2), parts(3), writer)
+          functions.HandleBuy(parts(1), parts(2).toInt, parts(3).toDouble, writer)
 
       else if cleaned.startsWith("sell") then
         val parts = cleaned.split("\\s+")
         if parts.length >= 4 then
-          //HandleSell(parts(1), parts(2), parts(3), writer)
+          functions.HandleCell(parts(1), parts(2).toInt, parts(3).toDouble, writer)
 
     source.close()
 
