@@ -39,7 +39,7 @@ import scala.io.Source
           functions.HandleBuy(parts(1), parts(2).toInt, parts(3).toDouble, writer)
           totalBuy += parts(2).toInt * parts(3).toDouble
 
-      else if cleaned.startsWith("sell") then
+      else if cleaned.startsWith("cell") then
         val parts = cleaned.split("\\s+")
         if parts.length >= 4 then
           functions.HandleCell(parts(1), parts(2).toInt, parts(3).toDouble, writer)
@@ -49,11 +49,9 @@ import scala.io.Source
     source.close()
 
   writer.println("Total Buy: " + totalBuy)
-  writer.println("Total Sell: " + totalCell)
+  writer.println("Total Cell: " + totalCell)
   println("Total Buy: " + totalBuy)
-  println("Total Sell: " + totalCell)
+  println("Total Cell: " + totalCell)
 
-  writer.close()
-  println("Done.")
   writer.close()
   println("Done.")
