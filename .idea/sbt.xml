@@ -7,11 +7,14 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/project" />
+            <option value="C:\Users\panda\IdeaProjects\Principals Software\Ekronot-Targilims" />
+            <option value="C:\Users\panda\IdeaProjects\Principals Software\Ekronot-Targilims\project" />
+            <option value="C:\Users\panda\IdeaProjects\Principals Software\Ekronot-Targilims\project-0" />
+            <option value="C:\Users\panda\IdeaProjects\Principals Software\Ekronot-Targilims\project-1" />
+            <option value="C:\Users\panda\IdeaProjects\Principals Software\Ekronot-Targilims\project-2" />
           </set>
         </option>
-        <option name="sbtVersion" value="1.10.3" />
+        <option name="sbtVersion" value="1.11.5" />
       </SbtProjectSettings>
     </option>
   </component>

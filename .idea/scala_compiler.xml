@@ -2,6 +2,6 @@
 <project version="4">
   <component name="ScalaCompilerConfiguration">
     <option name="separateProdTestSources" value="true" />
-    <profile name="sbt 1" modules="TargilZero,TargilZero.main,TargilZero.test,ekronot-targilims,ekronot-targilims.main,ekronot-targilims.test" />
+    <profile name="sbt 1" modules="TargilZero,TargilZero.main,TargilZero.project-0,TargilZero.project-0.main,TargilZero.project-0.test,TargilZero.project-1,TargilZero.project-1.main,TargilZero.project-1.test,TargilZero.project-2,TargilZero.project-2.main,TargilZero.project-2.test,TargilZero.test,ekronot-targilims,ekronot-targilims.main,ekronot-targilims.test" />
   </component>
 </project>

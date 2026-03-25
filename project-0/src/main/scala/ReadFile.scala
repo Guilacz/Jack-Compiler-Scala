@@ -1,5 +1,6 @@
-import java.io.File
-import java.io.PrintWriter
+// 2045605 guila cz
+// 209606318 devorah wajs
+import java.io.{File, PrintWriter}
 import scala.io.Source
 
 @main def runTranslator(): Unit =
