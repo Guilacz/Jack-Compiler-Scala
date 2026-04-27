@@ -7,6 +7,8 @@ class CodeWriter(outputFile: File, fileName: String) {
 
   private val writer = new BufferedWriter(new FileWriter(outputFile))
   private var labelCounter = 0
+  private var returnCounter = 0
+
 
   private def writeLine(s: String): Unit = {
     writer.write(s)
@@ -268,6 +270,56 @@ class CodeWriter(outputFile: File, fileName: String) {
     }
   }
 
+
+  //helper : pushes the value stored in register D onto the stack and increments the stack pointer.
+
+  private def pushD(): Unit = {
+    writeLine("@SP")
+    writeLine("A=M")
+    writeLine("M=D")
+    writeLine("@SP")
+    writeLine("M=M+1")
+  }
+
+
+  def writeCall(name: String, nArgs: Int): Unit = {
+
+    // generate unique return label
+    val ret = s"RET$returnCounter"
+    returnCounter += 1
+
+    // push return address
+    writeLine(s"@$ret")
+    writeLine("D=A")
+    pushD()
+
+    // push LCL ARG THIS THAT
+    List("LCL", "ARG", "THIS", "THAT").foreach { seg =>
+      writeLine(s"@$seg")
+      writeLine("D=M")
+      pushD()
+    }
+
+    // ARG = SP - nArgs -5 (5 for return address and 4 saved segments)
+    writeLine("@SP")
+    writeLine("D=M")
+    writeLine(s"@${nArgs + 5}")
+    writeLine("D=D-A") //D = SP - (nArgs + 5)
+    writeLine("@ARG")
+    writeLine("M=D") //ARG = SP - nArgs - 5
+
+    // LCL=SP we put the local variables of the function in top of the stack
+    writeLine("@SP")
+    writeLine("D=M")
+    writeLine("@LCL")
+    writeLine("M=D")
+
+    // goto function
+    writeLine(s"@$name")
+    writeLine("0;JMP")
+
+    writeLine(s"($ret)")
+  }
 }
 
 
