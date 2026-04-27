@@ -258,6 +258,16 @@ class CodeWriter(outputFile: File, fileName: String) {
     writeLine(s"@$label")
     writeLine("D;JNE")
   }
+
+  // Function
+  def writeFunction(name: String, nLocals: Int): Unit = {
+    writeLine(s"($name)")
+    for (_ <- 0 until nLocals) {
+      writePush("constant", 0)
+      // for each local we put 0 in the stack to make place
+    }
   }
+
+}
 
 
