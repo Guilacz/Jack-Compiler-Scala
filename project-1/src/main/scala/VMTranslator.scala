@@ -31,7 +31,10 @@ object VMTranslator {
     val codeWriter = new CodeWriter(outputFile)
 
     // Bootstrap code
-    codeWriter.writeInit()
+    if (input.isDirectory) {
+      val hasSys = input.listFiles().exists(_.getName == "Sys.vm")
+      if (hasSys) codeWriter.writeInit()
+    }
 
     // Get all .vm files
     val vmFiles =
