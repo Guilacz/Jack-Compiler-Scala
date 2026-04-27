@@ -320,6 +320,54 @@ class CodeWriter(outputFile: File, fileName: String) {
 
     writeLine(s"($ret)")
   }
+
+  // Return
+  def writeReturn(): Unit = {
+    // Save the current LCL frame address into R13
+    writeLine("@LCL")
+    writeLine("D=M")
+    writeLine("@R13")
+    writeLine("M=D")
+
+    // Get return address from *(FRAME-5) and store it in R14
+    writeLine("@5")
+    writeLine("A=D-A")
+    writeLine("D=M")
+    writeLine("@R14")
+    writeLine("M=D")
+
+    // Pop top stack value and place it into *ARG (return value)
+    writeLine("@SP")
+    writeLine("AM=M-1")
+    writeLine("D=M")
+    writeLine("@ARG")
+    writeLine("A=M")
+    writeLine("M=D")
+
+    // Reposition SP to ARG + 1
+    writeLine("@ARG")
+    writeLine("D=M+1")
+    writeLine("@SP")
+    writeLine("M=D")
+
+    // Restore THAT, THIS, ARG, and LCL from saved frame
+    List("THAT", "THIS", "ARG", "LCL").zipWithIndex.foreach {
+      case (seg, i) =>
+        writeLine("@R13")
+        writeLine("D=M")
+        writeLine(s"@${i + 1}")
+        writeLine("A=D-A")
+        writeLine("D=M")
+        writeLine(s"@$seg")
+        writeLine("M=D")
+    }
+
+    // Jump to the saved return address
+    writeLine("@R14")
+    writeLine("A=M")
+    writeLine("0;JMP")
+  }
+
 }
 
 
