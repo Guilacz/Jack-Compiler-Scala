@@ -29,6 +29,9 @@ class CodeWriter(outputFile: File, fileName: String) {
       case "eq" =>
         writeComparison("JEQ")
 
+      case "eq#" =>
+        writeHagana("JEQ")
+
       case "gt" =>
         writeComparison("JGT")
 
@@ -60,6 +63,36 @@ class CodeWriter(outputFile: File, fileName: String) {
       case "not" => writeLine("M=!M")
     }
   }
+
+  private def writeHagana(jump: String): Unit = {
+    val trueLabel = s"TRUE_$labelCounter"
+    val endLabel = s"END_$labelCounter"
+    labelCounter += 1
+
+    writeLine("@SP")
+    writeLine("AM=M-1")
+    writeLine("D=M")
+    writeLine("A=A-1")
+    writeLine("D=M-D")
+
+    writeLine(s"@$trueLabel")
+    writeLine(s"D;$jump")
+
+    writeLine("@SP")
+    writeLine("A=M-1")
+    writeLine("M=-1")
+
+    writeLine(s"@$endLabel")
+    writeLine("0;JMP")
+
+    writeLine(s"($trueLabel)")
+    writeLine("@SP")
+    writeLine("A=M-1")
+    writeLine("M=0")
+
+    writeLine(s"($endLabel)")
+  }
+
 
   private def writeComparison(jump: String): Unit = {
     val trueLabel = s"TRUE_$labelCounter"
