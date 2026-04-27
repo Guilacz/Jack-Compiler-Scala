@@ -28,7 +28,7 @@ object VMTranslator {
       else
         new File(input.getAbsolutePath.replace(".vm", ".asm"))
 
-    val codeWriter = new CodeWriter(outputFile, "")
+    val codeWriter = new CodeWriter(outputFile)
 
     // Bootstrap code
     codeWriter.writeInit()
