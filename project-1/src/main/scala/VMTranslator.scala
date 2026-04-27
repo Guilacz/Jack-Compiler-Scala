@@ -33,12 +33,27 @@ object VMTranslator {
       codeWriter.writeComment(parser.currentCommandString)
 
       parser.commandType match {
+        //STAGE 1
         case C_ARITHMETIC =>
           codeWriter.writeArithmetic(parser.arg1.get)
         case C_PUSH =>
           codeWriter.writePushPop("push", parser.arg1.get, parser.arg2.get)
         case C_POP =>
           codeWriter.writePushPop("pop", parser.arg1.get, parser.arg2.get)
+
+        // STAGE 2
+        case C_LABEL =>
+          codeWriter.writeLabel(parser.arg1.get)
+        case C_GOTO =>
+          codeWriter.writeGoto(parser.arg1.get)
+        case C_IF =>
+          codeWriter.writeIf(parser.arg1.get)
+        case C_FUNCTION =>
+          codeWriter.writeFunction(parser.arg1.get, parser.arg2.get)
+        case C_CALL =>
+          codeWriter.writeCall(parser.arg1.get, parser.arg2.get)
+        case C_RETURN =>
+          codeWriter.writeReturn()
       }
     }
 
