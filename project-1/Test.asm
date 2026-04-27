@@ -1,78 +1,34 @@
-// push constant 111
-@111
+// push constant 17
+@17
 D=A
 @SP
 A=M
 M=D
 @SP
 M=M+1
-// push constant 333
-@333
+// push constant 17
+@17
 D=A
 @SP
 A=M
 M=D
 @SP
 M=M+1
-// push constant 888
-@888
-D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// pop static 8
-@SP
-AM=M-1
-D=M
-@Test.8
-M=D
-// pop static 3
-@SP
-AM=M-1
-D=M
-@Test.3
-M=D
-// pop static 1
-@SP
-AM=M-1
-D=M
-@Test.1
-M=D
-// push static 3
-@Test.3
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push static 1
-@Test.1
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// sub
+// eq#
 @SP
 AM=M-1
 D=M
 A=A-1
-M=M-D
-// push static 8
-@Test.8
-D=M
+D=M-D
+@TRUE_0
+D;JEQ
 @SP
-A=M
-M=D
+A=M-1
+M=-1
+@END_0
+0;JMP
+(TRUE_0)
 @SP
-M=M+1
-// add
-@SP
-AM=M-1
-D=M
-A=A-1
-M=M+D
+A=M-1
+M=0
+(END_0)
