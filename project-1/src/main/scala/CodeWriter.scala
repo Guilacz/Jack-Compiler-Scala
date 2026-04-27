@@ -2,6 +2,9 @@ import java.io._
 
 class CodeWriter(outputFile: File, fileName: String) {
 
+  // STAGE 1: Arithmetic and Push/Pop ------------------------------------
+
+
   private val writer = new BufferedWriter(new FileWriter(outputFile))
   private var labelCounter = 0
 
@@ -233,4 +236,28 @@ class CodeWriter(outputFile: File, fileName: String) {
   def writeComment(comment: String): Unit = {
     writeLine(s"// $comment")
   }
-}
+
+
+  // STAGE 2: LABEL GOTO IF-GOTO ------------------------------------
+
+  //label
+  def writeLabel(label: String): Unit = {
+    writeLine(s"($label)")}
+
+  //goto
+  def writeGoto(label: String): Unit = {
+    writeLine(s"@$label")
+    writeLine("0;JMP")
+    }
+
+ // if -goto
+  def writeIf(label: String): Unit = {
+    writeLine("@SP")
+    writeLine("AM=M-1")
+    writeLine("D=M")
+    writeLine(s"@$label")
+    writeLine("D;JNE")
+  }
+  }
+
+
