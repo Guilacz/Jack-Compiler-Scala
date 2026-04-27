@@ -5,55 +5,84 @@ object VMTranslator {
 
   def main(args: Array[String]): Unit = {
 
-    val filePath =
+    val path =
       if (args.length == 1) {
         args(0)
       } else {
-        println("Enter path to .vm file:")
+        println("Enter path to .vm file or folder:")
         StdIn.readLine()
       }
 
-    val inputFile = new File(filePath)
+    val input = new File(path)
 
-    if (!inputFile.exists()) {
-      println(s"File not found: $filePath")
+    if (!input.exists()) {
+      println(s"Path not found: $path")
       System.exit(1)
     }
 
+    // If input is a folder → output file = FolderName.asm inside folder
+    // If input is a file   → output file = SameName.asm
     val outputFile =
-      new File(inputFile.getAbsolutePath.replace(".vm", ".asm"))
+      if (input.isDirectory)
+        new File(input, input.getName + ".asm")
+      else
+        new File(input.getAbsolutePath.replace(".vm", ".asm"))
 
-    val parser = new Parser(inputFile)
-    val codeWriter = new CodeWriter(outputFile, inputFile.getName.replace(".vm", ""))
+    val codeWriter = new CodeWriter(outputFile, "")
 
+    // Bootstrap code
+    codeWriter.writeInit()
 
-    while (parser.hasMoreCommands) {
-      parser.advance()
+    // Get all .vm files
+    val vmFiles =
+      if (input.isDirectory)
+        input.listFiles().filter(f => f.isFile && f.getName.endsWith(".vm")).toList
+      else
+        List(input)
 
-      codeWriter.writeComment(parser.currentCommandString)
+    // Translate each file
+    for (file <- vmFiles) {
 
-      parser.commandType match {
-        //STAGE 1
-        case C_ARITHMETIC =>
-          codeWriter.writeArithmetic(parser.arg1.get)
-        case C_PUSH =>
-          codeWriter.writePushPop("push", parser.arg1.get, parser.arg2.get)
-        case C_POP =>
-          codeWriter.writePushPop("pop", parser.arg1.get, parser.arg2.get)
+      val parser = new Parser(file)
 
-        // STAGE 2
-        case C_LABEL =>
-          codeWriter.writeLabel(parser.arg1.get)
-        case C_GOTO =>
-          codeWriter.writeGoto(parser.arg1.get)
-        case C_IF =>
-          codeWriter.writeIf(parser.arg1.get)
-        case C_FUNCTION =>
-          codeWriter.writeFunction(parser.arg1.get, parser.arg2.get)
-        case C_CALL =>
-          codeWriter.writeCall(parser.arg1.get, parser.arg2.get)
-        case C_RETURN =>
-          codeWriter.writeReturn()
+      codeWriter.setFileName(file.getName.replace(".vm", ""))
+
+      while (parser.hasMoreCommands) {
+        parser.advance()
+
+        codeWriter.writeComment(parser.currentCommandString)
+
+        parser.commandType match {
+
+          // STAGE 1
+          case C_ARITHMETIC =>
+            codeWriter.writeArithmetic(parser.arg1.get)
+
+          case C_PUSH =>
+            codeWriter.writePushPop("push", parser.arg1.get, parser.arg2.get)
+
+          case C_POP =>
+            codeWriter.writePushPop("pop", parser.arg1.get, parser.arg2.get)
+
+          // STAGE 2
+          case C_LABEL =>
+            codeWriter.writeLabel(parser.arg1.get)
+
+          case C_GOTO =>
+            codeWriter.writeGoto(parser.arg1.get)
+
+          case C_IF =>
+            codeWriter.writeIf(parser.arg1.get)
+
+          case C_FUNCTION =>
+            codeWriter.writeFunction(parser.arg1.get, parser.arg2.get)
+
+          case C_CALL =>
+            codeWriter.writeCall(parser.arg1.get, parser.arg2.get)
+
+          case C_RETURN =>
+            codeWriter.writeReturn()
+        }
       }
     }
 

@@ -1,6 +1,6 @@
 import java.io._
 
-class CodeWriter(outputFile: File, fileName: String) {
+class CodeWriter(outputFile: File) {
 
   // STAGE 1: Arithmetic and Push/Pop ------------------------------------
 
@@ -8,8 +8,12 @@ class CodeWriter(outputFile: File, fileName: String) {
   private val writer = new BufferedWriter(new FileWriter(outputFile))
   private var labelCounter = 0
   private var returnCounter = 0
+  private var fileName = ""
 
-
+  def setFileName(name: String): Unit = {
+    fileName = name
+  }
+  
   private def writeLine(s: String): Unit = {
     writer.write(s)
     writer.newLine()
@@ -367,7 +371,14 @@ class CodeWriter(outputFile: File, fileName: String) {
     writeLine("A=M")
     writeLine("0;JMP")
   }
-
+  // Init program
+  def writeInit(): Unit = {
+    writeLine("@256")
+    writeLine("D=A")
+    writeLine("@SP")
+    writeLine("M=D")
+    writeCall("Sys.init", 0)
+  }
 }
 
 
