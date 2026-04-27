@@ -6,7 +6,7 @@ case object C_ARITHMETIC extends CommandType
 case object C_PUSH extends CommandType
 case object C_POP extends CommandType
 
-// STAGE
+// STAGE 2
 case object C_LABEL extends CommandType
 case object C_GOTO extends CommandType
 case object C_IF extends CommandType
