@@ -21,8 +21,19 @@ class Parser(file: File) {
   }
 
   def commandType: CommandType = {
+    // STAGE 1
     if (currentCommand.startsWith("push")) C_PUSH
     else if (currentCommand.startsWith("pop")) C_POP
+
+    //STAGE 2
+    else if (currentCommand.startsWith("label")) C_LABEL
+    else if (currentCommand.startsWith("goto")) C_GOTO
+    else if (currentCommand.startsWith("if-goto")) C_IF
+    else if (currentCommand.startsWith("function")) C_FUNCTION
+    else if (currentCommand.startsWith("call")) C_CALL
+    else if (currentCommand.startsWith("return")) C_RETURN
+
+    // STAGE 1
     else C_ARITHMETIC
   }
 
