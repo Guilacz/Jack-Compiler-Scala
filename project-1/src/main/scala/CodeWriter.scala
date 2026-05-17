@@ -276,10 +276,10 @@ class CodeWriter(outputFile: File) {
 
 
   //helper : pushes the value stored in register D onto the stack and increments the stack pointer.
-
+ //ram[sp]=D sp++
   private def pushD(): Unit = {
     writeLine("@SP")
-    writeLine("A=M")
+    writeLine("A=M") 
     writeLine("M=D")
     writeLine("@SP")
     writeLine("M=M+1")
@@ -308,7 +308,7 @@ class CodeWriter(outputFile: File) {
     writeLine("@SP")
     writeLine("D=M")
     writeLine(s"@${nArgs + 5}")
-    writeLine("D=D-A") //D = SP - (nArgs + 5)
+    writeLine("D=D-A") //D = SP - (nArgs + 5) 
     writeLine("@ARG")
     writeLine("M=D") //ARG = SP - nArgs - 5
 
