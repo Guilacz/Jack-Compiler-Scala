@@ -1,18 +1,25 @@
-import scala.io.Source
+import scala.io.{Source, StdIn}
+import java.io.File
 import java.io.PrintWriter
 
 object Main {
 
   def main(args: Array[String]): Unit = {
 
-    val input = Source.fromFile(args(0)).mkString
+    val path =
+      if (args.length == 1) {
+        args(0)
+      } else {
+        println("Enter path to .jack file:")
+        StdIn.readLine()
+      }
 
-    val tokenizer = new JackTokenizer(input)
+    val tokenizer = new JackTokenizer(path)
     val tokens = tokenizer.tokenize()
 
     val xml = tokenizer.toXML(tokens)
 
-    val out = new PrintWriter(args(0).replace(".jack", "T.xml"))
+    val out = new PrintWriter(path.replace(".jack", "T.xml"))
     out.write(xml)
     out.close()
   }
