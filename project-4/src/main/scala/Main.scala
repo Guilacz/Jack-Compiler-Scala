@@ -13,21 +13,35 @@ object Main {
         StdIn.readLine()
       }
 
-    val inputCode = Source.fromFile(path).mkString
+    val inputFile = new File(path)
+    val inputCode = Source.fromFile(inputFile).mkString
 
     val tokenizer = new JackTokenizer(inputCode)
     val tokens = tokenizer.tokenize()
 
     val xml = tokenizer.toXML(tokens)
 
-    val outputDir = new File("Outputs/outputs stage 4")
+    // =========================================================================
+    // LOGIQUE DE TRI AUTOMATIQUE PAR DOSSIER DE PROJET
+    // =========================================================================
+
+    // Récupère le nom du dossier contenant le fichier (ex: "ExpressionLessSquare" ou "ArrayTest")
+    val projectFolderName = inputFile.getParentFile.getName
+
+    // Structure cible : Outputs / outputs stage 4 / [NomDuProjet]
+    val outputDir = new File(s"Outputs/outputs stage 4/$projectFolderName")
+
+    // Crée toute l'arborescence de dossiers si elle n'existe pas
     if (!outputDir.exists()) outputDir.mkdirs()
 
-    val fileName = new File(path).getName.replace(".jack", "T.xml")
+    // Extraction du nom de fichier (ex: Main.jack -> MainT.xml)
+    val fileName = inputFile.getName.replace(".jack", "T.xml")
 
+    // Chemin complet du fichier final
     val outputFile = new File(outputDir, fileName)
     val outPath = outputFile.getPath
 
+    // Écriture du fichier XML
     val out = new PrintWriter(outputFile)
     out.write(xml)
     out.close()
