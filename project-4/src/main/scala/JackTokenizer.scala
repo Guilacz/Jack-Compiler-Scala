@@ -28,10 +28,11 @@ class JackTokenizer(input: String) {
   // =========================
   // CLEAN INPUT
   // =========================
+ 
   def clean(code: String): String = {
     code
-      .replaceAll("//.*", "")
-      .replaceAll("/\\*.*?\\*/", "")
+      .replaceAll("//.*", "")             
+      .replaceAll("(?s)/\\*.*?\\*/", "") 
   }
 
   // =========================
