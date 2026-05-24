@@ -596,4 +596,41 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     printToken()
     advance()
   }
+
+  // Compiles a list of expressions.
+  // Grammar:
+  // (expression (',' expression)*)?
+  def compileExpressionList(): Unit = {
+
+    write("<expressionList>")
+
+    // empty list case
+    if (token match {
+      case Symbol(")") => true
+      case _ => false
+    }) {
+      // nothing inside
+    }
+    else {
+
+      // first expression
+      compileExpression()
+
+      // (',' expression)*
+      while (token match {
+        case Symbol(",") => true
+        case _ => false
+      }) {
+
+        // ','
+        printToken()
+        advance()
+
+        // next expression
+        compileExpression()
+      }
+    }
+
+    write("</expressionList>")
+  }
 }
