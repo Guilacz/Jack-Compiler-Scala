@@ -40,6 +40,15 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
       compileClassVarDec()
     }
 
+    while (token match {
+      case Keyword("constructor") => true
+      case Keyword("function") => true
+      case Keyword("method") => true
+      case _ => false
+    }) {
+      compileSubroutine()
+    }
+
     printToken()
     advance() // }
 
@@ -329,9 +338,8 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     printToken()
     advance()
 
-    write("<expressionList>")
     compileExpressionList()
-    write("</expressionList>")
+
     // ')'
     printToken()
     advance()
@@ -589,10 +597,8 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     printToken()
     advance()
 
-    // expressionList (temporary simple version)
-    write("<expressionList>")
     compileExpressionList()
-    write("</expressionList>")
+
     // ')'
     printToken()
     advance()
