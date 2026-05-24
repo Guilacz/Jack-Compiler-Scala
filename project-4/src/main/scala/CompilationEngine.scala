@@ -283,4 +283,85 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     write("</letStatement>")
   }
 
+  // Compiles a do statement.
+  // Grammar:
+  // 'do' subroutineCall ';'
+  def compileDo(): Unit = {
+
+    write("<doStatement>")
+
+    // 'do'
+    printToken()
+    advance()
+
+    // subroutine call
+    compileSubroutineCall()
+
+    // ';'
+    printToken()
+    advance()
+
+    write("</doStatement>")
+  }
+
+  // Compiles a subroutine call:
+  // functionName() | className.methodName() | varName.methodName()
+  def compileSubroutineCall(): Unit = {
+
+    // first identifier
+    printToken()
+    advance()
+
+    // optional ".method"
+    if (token match {
+      case Symbol(".") => true
+      case _ => false
+    }) {
+
+      printToken() // '.'
+      advance()
+
+      printToken() // methodName
+      advance()
+    }
+
+    // '('
+    printToken()
+    advance()
+
+    // expressionList (TEMPORAIRE vide pour l'instant)
+    write("<expressionList></expressionList>")
+
+    // ')'
+    printToken()
+    advance()
+  }
+
+  // Compiles a return statement.
+  // Grammar:
+  // 'return' expression? ';'
+  def compileReturn(): Unit = {
+
+    write("<returnStatement>")
+
+    // 'return'
+    printToken()
+    advance()
+
+    // optional expression
+    token match {
+      case Symbol(";") =>
+      // return void
+
+      case _ =>
+        // return expression
+        compileExpression()
+    }
+
+    // ';'
+    printToken()
+    advance()
+
+    write("</returnStatement>")
+  }
 }
