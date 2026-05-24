@@ -29,7 +29,14 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
 
   def printToken(): Unit = token match {
     case Keyword(v)    => write(s"<keyword> $v </keyword>")
-    case Symbol(v)     => write(s"<symbol> $v </symbol>")
+    case Symbol(v) =>
+      val escaped = v match {
+        case "<" => "&lt;"
+        case ">" => "&gt;"
+        case "&" => "&amp;"
+        case _ => v
+      }
+      write(s"<symbol> $escaped </symbol>")
     case Identifier(v) => write(s"<identifier> $v </identifier>")
     case IntConst(v)   => write(s"<integerConstant> $v </integerConstant>")
     case StringConst(v)=> write(s"<stringConstant> $v </stringConstant>")
@@ -37,7 +44,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
 
   def compileClass(): Unit = {
 
-    openTag("<class>")
+    openTag("class")
 
     printToken()
     advance() // class
@@ -67,7 +74,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     printToken()
     advance() // }
 
-    closeTag("</class>")
+    closeTag("class")
   }
 
 
@@ -81,7 +88,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // '}'
   def compileClassVarDec(): Unit = {
 
-    openTag("<classVarDec>")
+    openTag("classVarDec")
 
     // static | field
     printToken()
@@ -111,7 +118,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     printToken()
     advance()
 
-    closeTag("</classVarDec>")
+    closeTag("classVarDec")
   }
 
   // Compiles a subroutine declaration.
@@ -123,7 +130,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // subroutineBody
   def compileSubroutine(): Unit = {
 
-    openTag("<subroutineDec>")
+    openTag("subroutineDec")
 
     // constructor | function | method
     printToken()
@@ -142,9 +149,36 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     advance()
 
     // parameter list
-    openTag("<parameterList>")
-    // (to implement later: compileParameterList)
-    closeTag("</parameterList>")
+    openTag("parameterList")
+    if (!(token match {
+      case Symbol(")") => true
+      case _ => false
+    })) {
+
+      // type
+      printToken()
+      advance()
+
+      // varName
+      printToken()
+      advance()
+
+      while (token match {
+        case Symbol(",") => true
+        case _ => false
+      }) {
+
+        printToken() // ,
+        advance()
+
+        printToken() // type
+        advance()
+
+        printToken() // varName
+        advance()
+      }
+    }
+    closeTag("parameterList")
 
     // ')'
     printToken()
@@ -153,7 +187,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     // subroutine body
     compileSubroutineBody()
 
-    closeTag("</subroutineDec>")
+    closeTag("subroutineDec")
   }
 
   // Compiles a subroutine body.
@@ -161,7 +195,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // '{' varDec* statements '}'
   def compileSubroutineBody(): Unit = {
 
-    openTag("<subroutineBody>")
+    openTag("subroutineBody")
 
     // '{'
     printToken()
@@ -176,22 +210,22 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     }
 
     // statements (let, if, while, do, return)
-    openTag("<statements>")
+    openTag("statements")
     compileStatements()
-    closeTag("</statements>")
+    closeTag("statements")
 
     // '}'
     printToken()
     advance()
 
-    closeTag("</subroutineBody>")
+    closeTag("subroutineBody")
   }
 
   // Compiles a variable declaration inside a subroutine.
   // Grammar: 'var' type varName (',' varName)* ';'
   def compileVarDec(): Unit = {
 
-    openTag("<varDec>")
+    openTag("varDec")
 
     // 'var'
     printToken()
@@ -221,7 +255,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     printToken()
     advance()
 
-    closeTag("</varDec>")
+    closeTag("varDec")
   }
 
   // Compiles a sequence of statements.
@@ -265,7 +299,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // 'let' varName ('[' expression ']')? '=' expression ';'
   def compileLet(): Unit = {
 
-    openTag("<letStatement>")
+    openTag("letStatement")
 
     // 'let'
     printToken()
@@ -304,7 +338,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     printToken()
     advance()
 
-    closeTag("</letStatement>")
+    closeTag("letStatement")
   }
 
   // Compiles a do statement.
@@ -312,7 +346,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // 'do' subroutineCall ';'
   def compileDo(): Unit = {
 
-    openTag("<doStatement>")
+    openTag("doStatement")
 
     // 'do'
     printToken()
@@ -325,72 +359,64 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     printToken()
     advance()
 
-    closeTag("</doStatement>")
+    closeTag("doStatement")
   }
 
   // Compiles a subroutine call:
   // functionName() | className.methodName() | varName.methodName()
   def compileSubroutineCall(): Unit = {
 
-    // first identifier already printed in term OR caller context
-    // BUT here we assume we are AFTER identifier
+    // className / varName / functionName
+    printToken()
+    advance()
 
-    if (tokens(i - 1) match {
-      case Identifier(_) => true
-      case _ => false
-    }) {
-      // already consumed
-    }
-
-    // '.' method call
+    // optional ". subroutineName"
     if (token match {
       case Symbol(".") => true
       case _ => false
     }) {
-      printToken()
+
+      printToken() // .
       advance()
 
-      printToken()
+      printToken() // subroutineName
       advance()
     }
 
-    // '('
+    // (
     printToken()
     advance()
 
     compileExpressionList()
 
-    // ')'
+    // )
     printToken()
     advance()
   }
-
   // Compiles a return statement.
   // Grammar:
   // 'return' expression? ';'
   def compileReturn(): Unit = {
 
-    openTag("<returnStatement>")
+    openTag("returnStatement")
 
     // 'return'
     printToken()
     advance()
 
     // optional expression
-    token match {
-      case Symbol(";") =>
-      // return void
-
-      case _ =>
-        // return expression
-        compileExpression()
+    if (!(token match {
+      case Symbol(";") => true
+      case _ => false
+    })) {
+      compileExpression()
     }
 
     // ';'
     printToken()
     advance()
 
-    closeTag("</returnStatement>")
+    closeTag("returnStatement")
   }
 
   // Compiles a while statement.
@@ -398,7 +424,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // 'while' '(' expression ')' '{' statements '}'
   def compileWhile(): Unit = {
 
-    openTag("<whileStatement>")
+    openTag("whileStatement")
 
     // 'while'
     printToken()
@@ -420,15 +446,15 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     advance()
 
     // statements inside loop
-    openTag("<statements>")
+    openTag("statements")
     compileStatements()
-    closeTag("</statements>")
+    closeTag("statements")
 
     // '}'
     printToken()
     advance()
 
-    closeTag("</whileStatement>")
+    closeTag("whileStatement")
   }
 
   // Compiles an if statement.
@@ -436,7 +462,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // 'if' '(' expression ')' '{' statements '}' ('else' '{' statements '}')?
   def compileIf(): Unit = {
 
-    openTag("<ifStatement>")
+    openTag("ifStatement")
 
     // 'if'
     printToken()
@@ -458,9 +484,9 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     advance()
 
     // if statements
-    openTag("<statements>")
+    openTag("statements")
     compileStatements()
-    closeTag("</statements>")
+    closeTag("statements")
 
     // '}'
     printToken()
@@ -481,16 +507,16 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
       advance()
 
       // else statements
-      openTag("<statements>")
+      openTag("statements")
       compileStatements()
-      closeTag("</statements>")
+      closeTag("statements")
 
       // '}'
       printToken()
       advance()
     }
 
-    closeTag("</ifStatement>")
+    closeTag("ifStatement")
   }
 
   // Compiles an expression.
@@ -498,7 +524,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // term (op term)*
   def compileExpression(): Unit = {
 
-    openTag("<expression>")
+    openTag("expression")
 
     // first term
     compileTerm()
@@ -519,7 +545,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
       compileTerm()
     }
 
-    closeTag("</expression>")
+    closeTag("expression")
   }
 
   // Compiles a term.
@@ -528,7 +554,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // A term is a basic unit of an expression.
   def compileTerm(): Unit = {
 
-    openTag("<term>")
+    openTag("term")
 
     token match {
 
@@ -563,31 +589,32 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
         compileTerm()
 
       case Identifier(_) =>
-        printToken()
-        advance()
+        tokens.lift(i + 1) match {
 
-        // Regarde le token SUIVANT pour savoir s'il s'agit d'un tableau ou d'un appel de fonction
-        token match {
-          // array access
-          case Symbol("[") =>
+          case Some(Symbol("[")) =>
             printToken()
             advance()
-            compileExpression()
-            printToken() // ']'
+
+            printToken() // [
             advance()
 
-          // subroutine call
-          case Symbol("(") | Symbol(".") =>
+            compileExpression()
+
+            printToken() // ]
+            advance()
+
+          case Some(Symbol("(") | Symbol(".")) =>
             compileSubroutineCall()
 
-          case _ => // Identifiant simple (nom de variable)
+          case _ =>
+            printToken()
+            advance()
         }
 
-      // Cas de repli si le token ne correspond à aucun début de terme valide
       case _ =>
-    } // <-- Ferme le gros "token match" ici
+    }
 
-    closeTag("<term>")
+    closeTag("term")
   }
 
  // Compiles a list of expressions.
@@ -595,7 +622,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // (expression (',' expression)*)?
   def compileExpressionList(): Unit = {
 
-    openTag("<expressionList>")
+    openTag("expressionList")
 
     // empty list case
     if (token match {
@@ -624,7 +651,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
       }
     }
 
-    closeTag("</expressionList>")
+    closeTag("expressionList")
   }
 
 }
