@@ -524,6 +524,8 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
 
   // Compiles a term.
   // A term is a basic unit of an expression.
+  // Compiles a term.
+  // A term is a basic unit of an expression.
   def compileTerm(): Unit = {
 
     openTag("<term>")
@@ -564,25 +566,28 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
         printToken()
         advance()
 
+        // Regarde le token SUIVANT pour savoir s'il s'agit d'un tableau ou d'un appel de fonction
         token match {
-
           // array access
           case Symbol("[") =>
             printToken()
             advance()
             compileExpression()
-            printToken()
+            printToken() // ']'
             advance()
 
           // subroutine call
           case Symbol("(") | Symbol(".") =>
             compileSubroutineCall()
 
-          case _ =>
+          case _ => // Identifiant simple (nom de variable)
         }
 
-    closeTag("</term>")
-  }
+      // Cas de repli si le token ne correspond à aucun début de terme valide
+      case _ =>
+    } // <-- Ferme le gros "token match" ici
+
+    closeTag("<term>")
   }
 
  // Compiles a list of expressions.

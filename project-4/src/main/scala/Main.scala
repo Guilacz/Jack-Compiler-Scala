@@ -25,17 +25,18 @@ object Main {
     val projectFolderName = inputFile.getParentFile.getName
 
     // =========================
-    // OUTPUT FOLDER
+    // OUTPUT FOLDER (Mis à jour pour : outputs stage 4 part 2)
     // =========================
-    val outputDir = new File(s"Outputs/$projectFolderName")
+    val outputDir = new File(s"Outputs/outputs stage 4 part 2/$projectFolderName")
     if (!outputDir.exists()) outputDir.mkdirs()
 
-    // =========================
-    // 1. TOKENIZER OUTPUT (T.XML)
-    // =========================
-    val tokenizerFileName =
-      inputFile.getName.replace(".jack", "T.xml")
+    // Extraction du nom de base sans l'extension .jack (ex: "Main" ou "array")
+    val baseName = inputFile.getName.stripSuffix(".jack")
 
+    // =========================
+    // 1. TOKENIZER OUTPUT (ex: MainT.xml ou arrayT.xml)
+    // =========================
+    val tokenizerFileName = s"${baseName}T.xml"
     val tokenizerFile = new File(outputDir, tokenizerFileName)
     val tokenizerOut = new PrintWriter(tokenizerFile)
 
@@ -47,11 +48,9 @@ object Main {
     println("TOKENIZER DONE -> " + tokenizerFile.getPath)
 
     // =========================
-    // 2. PARSER OUTPUT (.XML)
+    // 2. PARSER OUTPUT (ex: Main.xml ou array.xml)
     // =========================
-    val parserFileName =
-      inputFile.getName.replace(".jack", ".xml")
-
+    val parserFileName = s"$baseName.xml"
     val parserFile = new File(outputDir, parserFileName)
     val parserOut = new PrintWriter(parserFile)
 
