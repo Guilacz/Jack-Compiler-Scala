@@ -236,4 +236,51 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     }
   }
 
+  // Compiles a let statement.
+  // Grammar:
+  // 'let' varName ('[' expression ']')? '=' expression ';'
+  def compileLet(): Unit = {
+
+    write("<letStatement>")
+
+    // 'let'
+    printToken()
+    advance()
+
+    // varName
+    printToken()
+    advance()
+
+    // optional array access: [expression]
+    if (token match {
+      case Symbol("[") => true
+      case _ => false
+    }) {
+
+      // '['
+      printToken()
+      advance()
+
+      // expression inside brackets
+      compileExpression()
+
+      // ']'
+      printToken()
+      advance()
+    }
+
+    // '='
+    printToken()
+    advance()
+
+    // expression (right side)
+    compileExpression()
+
+    // ';'
+    printToken()
+    advance()
+
+    write("</letStatement>")
+  }
+
 }
