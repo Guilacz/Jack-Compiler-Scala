@@ -566,4 +566,34 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
 
     write("</term>")
   }
+
+  // Handles subroutine calls that start after an identifier.
+  // Grammar:
+  // varName.methodName() OR className.methodName()
+  def compileSubroutineCallAfterIdentifier(): Unit = {
+
+    // '.' method call
+    if (token match {
+      case Symbol(".") => true
+      case _ => false
+    }) {
+
+      printToken() // '.'
+      advance()
+
+      printToken() // methodName
+      advance()
+    }
+
+    // '('
+    printToken()
+    advance()
+
+    // expressionList (temporary simple version)
+    write("<expressionList></expressionList>")
+
+    // ')'
+    printToken()
+    advance()
+  }
 }
