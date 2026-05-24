@@ -24,18 +24,69 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
 
     write("<class>")
 
-    printToken() // class
-    advance()
+    printToken()
+    advance() // class
+    printToken()
+    advance() // name
+    printToken()
+    advance() // {
 
-    printToken() // name
-    advance()
 
-    printToken() // {
-    advance()
+    while (token match {
+      case Keyword("static") => true
+      case Keyword("field") => true
+      case _ => false
+    }) {
+      compileClassVarDec()
+    }
 
-    printToken() // }
-    advance()
+    printToken()
+    advance() // }
 
     write("</class>")
+  }
+
+
+  // Compiles a Jack class.
+  // Structure:
+  // class keyword
+  // class name
+  // '{'
+  // class variable declarations (static / field)
+  // subroutine declarations (methods, functions, constructors)
+  // '}'
+  def compileClassVarDec(): Unit = {
+
+    write("<classVarDec>")
+
+    // static | field
+    printToken()
+    advance()
+
+    // type (int, boolean, char, or className)
+    printToken()
+    advance()
+
+    // varName
+    printToken()
+    advance()
+
+    // (, varName)*
+    while (token match {
+      case Symbol(",") => true
+      case _ => false
+    }) {
+      printToken() // ,
+      advance()
+
+      printToken() // varName
+      advance()
+    }
+
+    // ;
+    printToken()
+    advance()
+
+    write("</classVarDec>")
   }
 }
