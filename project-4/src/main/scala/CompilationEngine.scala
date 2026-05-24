@@ -364,4 +364,104 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
 
     write("</returnStatement>")
   }
+
+  // Compiles a while statement.
+  // Grammar:
+  // 'while' '(' expression ')' '{' statements '}'
+  def compileWhile(): Unit = {
+
+    write("<whileStatement>")
+
+    // 'while'
+    printToken()
+    advance()
+
+    // '('
+    printToken()
+    advance()
+
+    // condition expression
+    compileExpression()
+
+    // ')'
+    printToken()
+    advance()
+
+    // '{'
+    printToken()
+    advance()
+
+    // statements inside loop
+    write("<statements>")
+    compileStatements()
+    write("</statements>")
+
+    // '}'
+    printToken()
+    advance()
+
+    write("</whileStatement>")
+  }
+
+  // Compiles an if statement.
+  // Grammar:
+  // 'if' '(' expression ')' '{' statements '}' ('else' '{' statements '}')?
+  def compileIf(): Unit = {
+
+    write("<ifStatement>")
+
+    // 'if'
+    printToken()
+    advance()
+
+    // '('
+    printToken()
+    advance()
+
+    // condition
+    compileExpression()
+
+    // ')'
+    printToken()
+    advance()
+
+    // '{'
+    printToken()
+    advance()
+
+    // if statements
+    write("<statements>")
+    compileStatements()
+    write("</statements>")
+
+    // '}'
+    printToken()
+    advance()
+
+    // optional else
+    if (token match {
+      case Keyword("else") => true
+      case _ => false
+    }) {
+
+      // 'else'
+      printToken()
+      advance()
+
+      // '{'
+      printToken()
+      advance()
+
+      // else statements
+      write("<statements>")
+      compileStatements()
+      write("</statements>")
+
+      // '}'
+      printToken()
+      advance()
+    }
+
+    write("</ifStatement>")
+  }
 }
