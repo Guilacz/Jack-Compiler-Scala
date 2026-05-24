@@ -317,20 +317,25 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // functionName() | className.methodName() | varName.methodName()
   def compileSubroutineCall(): Unit = {
 
-    // first identifier
-    printToken()
-    advance()
+    // first identifier already printed in term OR caller context
+    // BUT here we assume we are AFTER identifier
 
-    // optional ".method"
+    if (tokens(i - 1) match {
+      case Identifier(_) => true
+      case _ => false
+    }) {
+      // already consumed
+    }
+
+    // '.' method call
     if (token match {
       case Symbol(".") => true
       case _ => false
     }) {
-
-      printToken() // '.'
+      printToken()
       advance()
 
-      printToken() // methodName
+      printToken()
       advance()
     }
 
@@ -540,71 +545,32 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
         advance()
         compileTerm()
 
-      // identifier (varName, array, or subroutine call)
       case Identifier(_) =>
         printToken()
         advance()
 
-        // array access: var[expression]
-        if (token match {
-          case Symbol("[") => true
-          case _ => false
-        }) {
-          printToken() // '['
-          advance()
+        token match {
 
-          compileExpression()
+          // array access
+          case Symbol("[") =>
+            printToken()
+            advance()
+            compileExpression()
+            printToken()
+            advance()
 
-          printToken() // ']'
-          advance()
+          // subroutine call
+          case Symbol("(") | Symbol(".") =>
+            compileSubroutineCall()
+
+          case _ =>
         }
-
-        // subroutine call: . or (
-        else if (token match {
-          case Symbol("(") | Symbol(".") => true
-          case _ => false
-        }) {
-
-          compileSubroutineCallAfterIdentifier()
-        }
-
-      case _ =>
-        throw new RuntimeException("Invalid term")
-    }
 
     write("</term>")
   }
-
-  // Handles subroutine calls that start after an identifier.
-  // Grammar:
-  // varName.methodName() OR className.methodName()
-  def compileSubroutineCallAfterIdentifier(): Unit = {
-
-    // '.' method call
-    if (token match {
-      case Symbol(".") => true
-      case _ => false
-    }) {
-
-      printToken() // '.'
-      advance()
-
-      printToken() // methodName
-      advance()
-    }
-
-    // '('
-    printToken()
-    advance()
-
-    compileExpressionList()
-
-    // ')'
-    printToken()
-    advance()
   }
 
-  // Compiles a list of expressions.
+ // Compiles a list of expressions.
   // Grammar:
   // (expression (',' expression)*)?
   def compileExpressionList(): Unit = {
@@ -640,4 +606,5 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
 
     write("</expressionList>")
   }
+
 }
