@@ -101,7 +101,7 @@ class JackTokenizer(input: String) {
       case Symbol(v) => s"<symbol> ${escape(v)} </symbol>"
       case Identifier(v) => s"<identifier> $v </identifier>"
       case IntConst(v) => s"<integerConstant> $v </integerConstant>"
-      case StringConst(v) => s"<stringConstant> ${v.replaceAll("\r", "").trim} </stringConstant>"    }.mkString("\n")
+      case StringConst(v) => s"<stringConstant> $v </stringConstant>"    }.mkString("\n")
 
     "<tokens>\n" + body + "\n</tokens>"
   }
