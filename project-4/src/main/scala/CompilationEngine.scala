@@ -329,9 +329,9 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     printToken()
     advance()
 
-    // expressionList (TEMPORAIRE vide pour l'instant)
-    write("<expressionList></expressionList>")
-
+    write("<expressionList>")
+    compileExpressionList()
+    write("</expressionList>")
     // ')'
     printToken()
     advance()
@@ -590,8 +590,9 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     advance()
 
     // expressionList (temporary simple version)
-    write("<expressionList></expressionList>")
-
+    write("<expressionList>")
+    compileExpressionList()
+    write("</expressionList>")
     // ')'
     printToken()
     advance()
