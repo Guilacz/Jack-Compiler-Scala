@@ -19,9 +19,6 @@ object Main {
     val tokenizer = new JackTokenizer(inputCode)
     val tokens = tokenizer.tokenize()
 
-    val xml = tokenizer.toXML(tokens)
-
-
     val projectFolderName = inputFile.getParentFile.getName
 
     val outputDir = new File(s"Outputs/outputs stage 4/$projectFolderName")
@@ -34,7 +31,9 @@ object Main {
     val outPath = outputFile.getPath
 
     val out = new PrintWriter(outputFile)
-    out.write(xml)
+    val engine = new CompilationEngine(tokens, out)
+    engine.compileClass()
+
     out.close()
 
     println("DONE -> " + outPath)

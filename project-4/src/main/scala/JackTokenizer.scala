@@ -1,8 +1,6 @@
 import scala.io.Source
 
 class JackTokenizer(input: String) {
-  
-
   // =========================
   // VOCABULARY
   // =========================
