@@ -464,4 +464,106 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
 
     write("</ifStatement>")
   }
+
+  // Compiles an expression.
+  // Grammar:
+  // term (op term)*
+  def compileExpression(): Unit = {
+
+    write("<expression>")
+
+    // first term
+    compileTerm()
+
+    // (op term)*
+    while (token match {
+      case Symbol("+") | Symbol("-") | Symbol("*") |
+           Symbol("/") | Symbol("&") | Symbol("|") |
+           Symbol("<") | Symbol(">") | Symbol("=") => true
+      case _ => false
+    }) {
+
+      // operator
+      printToken()
+      advance()
+
+      // next term
+      compileTerm()
+    }
+
+    write("</expression>")
+  }
+
+  // Compiles a term.
+  // A term is a basic unit of an expression.
+  def compileTerm(): Unit = {
+
+    write("<term>")
+
+    token match {
+
+      // integer
+      case IntConst(_) =>
+        printToken()
+        advance()
+
+      // string
+      case StringConst(_) =>
+        printToken()
+        advance()
+
+      // keyword constants: true, false, null, this
+      case Keyword("true") | Keyword("false") |
+           Keyword("null") | Keyword("this") =>
+        printToken()
+        advance()
+
+      // (expression)
+      case Symbol("(") =>
+        printToken()
+        advance()
+        compileExpression()
+        printToken() // ')'
+        advance()
+
+      // unary operators
+      case Symbol("-") | Symbol("~") =>
+        printToken()
+        advance()
+        compileTerm()
+
+      // identifier (varName, array, or subroutine call)
+      case Identifier(_) =>
+        printToken()
+        advance()
+
+        // array access: var[expression]
+        if (token match {
+          case Symbol("[") => true
+          case _ => false
+        }) {
+          printToken() // '['
+          advance()
+
+          compileExpression()
+
+          printToken() // ']'
+          advance()
+        }
+
+        // subroutine call: . or (
+        else if (token match {
+          case Symbol("(") | Symbol(".") => true
+          case _ => false
+        }) {
+
+          compileSubroutineCallAfterIdentifier()
+        }
+
+      case _ =>
+        throw new RuntimeException("Invalid term")
+    }
+
+    write("</term>")
+  }
 }
