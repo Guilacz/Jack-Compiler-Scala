@@ -138,4 +138,96 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     compileStatements()
     eatSymbol() // '}'
   }
+
+  // -------------------------------------------------------
+  // COMPILE PARAMETER LIST
+  // -------------------------------------------------------
+  def compileParameterList(): Unit = {
+    if (!isSymbol(")")) {
+      val tpe = eat()
+      val name = eatIdentifier()
+      table.define(name, tpe, "arg")
+
+      while (isSymbol(",")) {
+        eatSymbol()
+        val t = eat()
+        val n = eatIdentifier()
+        table.define(n, t, "arg")
+      }
+    }
+  }
+
+  // -------------------------------------------------------
+  // COMPILE VAR DEC
+  // -------------------------------------------------------
+  def compileVarDec(): Unit = {
+    eatKeyword() // 'var'
+    val tpe = eat()
+    val name = eatIdentifier()
+    table.define(name, tpe, "var")
+
+    while (isSymbol(",")) {
+      eatSymbol()
+      val n = eatIdentifier()
+      table.define(n, tpe, "var")
+    }
+
+    eatSymbol() // ';'
+  }
+
+  // -------------------------------------------------------
+  // COMPILE STATEMENTS
+  // -------------------------------------------------------
+  def compileStatements(): Unit = {
+    var continue = true
+    while (continue) {
+      token match {
+        case Keyword("let") => compileLet()
+        case Keyword("if") => compileIf()
+        case Keyword("while") => compileWhile()
+        case Keyword("do") => compileDo()
+        case Keyword("return") => compileReturn()
+        case _ => continue = false
+      }
+    }
+  }
+
+  // -------------------------------------------------------
+  // COMPILE LET
+  // -------------------------------------------------------
+  def compileLet(): Unit = {
+    eatKeyword() // 'let'
+    val varName = eatIdentifier()
+    val isArray = isSymbol("[")
+
+    if (isArray) {
+      // push basic adress of table
+      val seg = table.segmentOf(varName).getOrElse("local")
+      val idx = table.indexOf(varName).getOrElse(0)
+      vm.writePush(seg, idx)
+
+      eatSymbol() // '['
+      compileExpression() // index
+      eatSymbol() // ']'
+
+      vm.writeArithmetic("add") // adress of the cell
+    }
+
+    eatSymbol() // '='
+    compileExpression() // value to assign
+    eatSymbol() // ';'
+
+    if (isArray) {
+      // value is on the stack adress just under 
+      vm.writePop("temp", 0) // back up of the value 
+      vm.writePop("pointer", 1) // ancre THAT on the adress
+      vm.writePush("temp", 0) // put the value back
+      vm.writePop("that", 0) // writes in the table
+    } else {
+      val seg = table.segmentOf(varName).getOrElse("local")
+      val idx = table.indexOf(varName).getOrElse(0)
+      vm.writePop(seg, idx)
+    }
+  }
+
 }
