@@ -355,4 +355,130 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     }
   }
 
+  // -------------------------------------------------------
+  // COMPILE EXPRESSION
+  // -------------------------------------------------------
+  def compileExpression(): Unit = {
+    compileTerm()
+
+    while (token match {
+      case Symbol(op) if Set("+", "-", "*", "/", "&", "|", "<", ">", "=").contains(op) => true
+      case _ => false
+    }) {
+      val op = eatSymbol()
+      compileTerm()
+      op match {
+        case "+" => vm.writeArithmetic("add")
+        case "-" => vm.writeArithmetic("sub")
+        case "*" => vm.writeCall("Math.multiply", 2)
+        case "/" => vm.writeCall("Math.divide", 2)
+        case "&" => vm.writeArithmetic("and")
+        case "|" => vm.writeArithmetic("or")
+        case "<" => vm.writeArithmetic("lt")
+        case ">" => vm.writeArithmetic("gt")
+        case "=" => vm.writeArithmetic("eq")
+      }
+    }
+  }
+
+  // -------------------------------------------------------
+  // COMPILE TERM
+  // -------------------------------------------------------
+  def compileTerm(): Unit = {
+    token match {
+
+      case IntConst(v) =>
+        advance()
+        vm.writePush("constant", v)
+
+      case StringConst(s) =>
+        advance()
+        // Allocates the string and calls String.appendChar for each char
+        vm.writePush("constant", s.length)
+        vm.writeCall("String.new", 1)
+        s.foreach { c =>
+          vm.writePush("constant", c.toInt)
+          vm.writeCall("String.appendChar", 2)
+        }
+
+      case Keyword("true") =>
+        advance()
+        vm.writePush("constant", 0)
+        vm.writeArithmetic("not") // true = -1 in Jack VM
+
+      case Keyword("false") | Keyword("null") =>
+        advance()
+        vm.writePush("constant", 0)
+
+      case Keyword("this") =>
+        advance()
+        vm.writePush("pointer", 0)
+
+      case Symbol("(") =>
+        eatSymbol()
+        compileExpression()
+        eatSymbol() // ')'
+
+      case Symbol("-") =>
+        eatSymbol()
+        compileTerm()
+        vm.writeArithmetic("neg")
+
+      case Symbol("~") =>
+        eatSymbol()
+        compileTerm()
+        vm.writeArithmetic("not")
+
+      case Identifier(_) =>
+        peekNext match {
+
+          case Some(Symbol("[")) =>
+            // Array access : varName[expression]
+            val varName = eatIdentifier()
+            val seg = table.segmentOf(varName).getOrElse("local")
+            val idx = table.indexOf(varName).getOrElse(0)
+            vm.writePush(seg, idx)
+
+            eatSymbol() // '['
+            compileExpression()
+            eatSymbol() // ']'
+
+            vm.writeArithmetic("add")
+            vm.writePop("pointer", 1)
+            vm.writePush("that", 0)
+
+          case Some(Symbol("(" | ".")) =>
+            compileSubroutineCall()
+
+          case _ =>
+            // Simple variable
+            val varName = eatIdentifier()
+            val seg = table.segmentOf(varName).getOrElse("local")
+            val idx = table.indexOf(varName).getOrElse(0)
+            vm.writePush(seg, idx)
+        }
+
+      case _ =>
+        advance() // security
+    }
+  }
+
+  // -------------------------------------------------------
+  // COMPILE EXPRESSION LIST
+  // Returns the number of compiled expressions
+  // -------------------------------------------------------
+  def compileExpressionList(): Int = {
+    if (isSymbol(")")) return 0
+
+    compileExpression()
+    var count = 1
+
+    while (isSymbol(",")) {
+      eatSymbol()
+      compileExpression()
+      count += 1
+    }
+
+    count
+  }
 }
