@@ -299,5 +299,60 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     vm.writePop("temp", 0) // ignores return value
   }
 
+  // -------------------------------------------------------
+  // COMPILE RETURN
+  // -------------------------------------------------------
+  def compileReturn(): Unit = {
+    eatKeyword() // 'return'
+
+    if (!isSymbol(";")) {
+      compileExpression()
+    } else {
+      vm.writePush("constant", 0) // void : return 0
+    }
+
+    eatSymbol() // ';'
+    vm.writeReturn()
+  }
+
+  // -------------------------------------------------------
+  // COMPILE SUBROUTINE CALL
+  // (used in  compileDo and compileTerm)
+  // -------------------------------------------------------
+  def compileSubroutineCall(): Unit = {
+    val firstName = eatIdentifier() // className | varName | subroutineName
+
+    if (isSymbol(".")) {
+      eatSymbol()
+      val methodName = eatIdentifier()
+
+      // varname or class ?
+      table.typeOf(firstName) match {
+        case Some(objType) =>
+          // method call on an object: push the object as arg0
+          val seg = table.segmentOf(firstName).getOrElse("local")
+          val idx = table.indexOf(firstName).getOrElse(0)
+          vm.writePush(seg, idx)
+          eatSymbol() // '('
+          val nArgs = compileExpressionList()
+          eatSymbol() // ')'
+          vm.writeCall(s"$objType.$methodName", nArgs + 1)
+
+        case None =>
+          // static call (function or constructor)
+          eatSymbol() // '('
+          val nArgs = compileExpressionList()
+          eatSymbol() // ')'
+          vm.writeCall(s"$firstName.$methodName", nArgs)
+      }
+    } else {
+      // function call in the same class : implicite this
+      vm.writePush("pointer", 0)
+      eatSymbol() // '('
+      val nArgs = compileExpressionList()
+      eatSymbol() // ')'
+      vm.writeCall(s"$className.$firstName", nArgs + 1)
+    }
+  }
 
 }
