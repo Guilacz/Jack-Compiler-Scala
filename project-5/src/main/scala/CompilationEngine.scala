@@ -230,4 +230,74 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     }
   }
 
+  // -------------------------------------------------------
+  // COMPILE IF
+  // -------------------------------------------------------
+  def compileIf(): Unit = {
+    val labelElse = newLabel(s"${className}_IF_FALSE")
+    val labelEnd = newLabel(s"${className}_IF_END")
+
+    eatKeyword() // 'if'
+    eatSymbol() // '('
+    compileExpression()
+    eatSymbol() // ')'
+
+    vm.writeArithmetic("not")
+    vm.writeIf(labelElse)
+
+    eatSymbol() // '{'
+    compileStatements()
+    eatSymbol() // '}'
+
+    if (isKeyword("else")) {
+      vm.writeGoto(labelEnd)
+      vm.writeLabel(labelElse)
+
+      eatKeyword() // 'else'
+      eatSymbol() // '{'
+      compileStatements()
+      eatSymbol() // '}'
+
+      vm.writeLabel(labelEnd)
+    } else {
+      vm.writeLabel(labelElse)
+    }
+  }
+
+  // -------------------------------------------------------
+  // COMPILE WHILE
+  // -------------------------------------------------------
+  def compileWhile(): Unit = {
+    val labelStart = newLabel(s"${className}_WHILE_START")
+    val labelEnd = newLabel(s"${className}_WHILE_END")
+
+    vm.writeLabel(labelStart)
+
+    eatKeyword() // 'while'
+    eatSymbol() // '('
+    compileExpression()
+    eatSymbol() // ')'
+
+    vm.writeArithmetic("not")
+    vm.writeIf(labelEnd)
+
+    eatSymbol() // '{'
+    compileStatements()
+    eatSymbol() // '}'
+
+    vm.writeGoto(labelStart)
+    vm.writeLabel(labelEnd)
+  }
+
+  // -------------------------------------------------------
+  // COMPILE DO
+  // -------------------------------------------------------
+  def compileDo(): Unit = {
+    eatKeyword() // 'do'
+    compileSubroutineCall()
+    eatSymbol() // ';'
+    vm.writePop("temp", 0) // ignores return value
+  }
+
+
 }
