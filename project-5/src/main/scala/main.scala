@@ -1,15 +1,59 @@
+import scala.io.{Source, StdIn}
+import java.io.{File, PrintWriter}
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-@main
-def main(): Unit = {
-  //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-  // to see how IntelliJ IDEA suggests fixing it.
-  (1 to 5).map(println)
+object Main {
 
-  for (i <- 1 to 5) {
-    //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-    // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-    println(s"i = $i")
+  def main(args: Array[String]): Unit = {
+
+    val path =
+      if (args.length == 1) args(0)
+      else {
+        println("Enter path to .jack file or directory:")
+        StdIn.readLine()
+      }
+
+    val inputFile = new File(path)
+
+    // accept file.jack or file that contains .jack
+    val jackFiles: List[File] =
+      if (inputFile.isDirectory)
+        inputFile.listFiles().toList.filter(_.getName.endsWith(".jack"))
+      else
+        List(inputFile)
+
+    if (jackFiles.isEmpty) {
+      println("No .jack files found.")
+      return
+    }
+
+    jackFiles.foreach { file =>
+      compileFile(file)
+    }
+  }
+
+  def compileFile(inputFile: File): Unit = {
+    val inputCode = Source.fromFile(inputFile).mkString
+
+    // Tokenize
+    val tokenizer = new JackTokenizer(inputCode)
+    val tokens    = tokenizer.tokenize()
+
+    val projectFolderName = inputFile.getParentFile.getName
+    val baseName          = inputFile.getName.stripSuffix(".jack")
+
+    // output file
+    val outputDir = new File(s"Outputs/outputs stage 5/$projectFolderName")
+    if (!outputDir.exists()) outputDir.mkdirs()
+
+    // output vm
+    val vmFile = new File(outputDir, s"$baseName.vm")
+    val vmOut  = new PrintWriter(vmFile)
+
+    val engine = new CompilationEngine(tokens, vmOut)
+    engine.compileClass()
+
+    vmOut.close()
+
+    println(s"VM DONE -> ${vmFile.getPath}")
   }
 }
-
