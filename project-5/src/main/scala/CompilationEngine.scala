@@ -50,4 +50,92 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   def isKeyword(k: String): Boolean = token match {
     case Keyword(v) => v == k
     case _ => false
-  }}
+  }
+
+  // -------------------------------------------------------
+  // COMPILE CLASS
+  // -------------------------------------------------------
+  def compileClass(): Unit = {
+    eatKeyword() // 'class'
+    className = eatIdentifier() // className
+    eatSymbol() // '{'
+
+    // class variable declarations
+    while (isKeyword("static") || isKeyword("field")) {
+      compileClassVarDec()
+    }
+
+    // subroutine declarations
+    while (isKeyword("constructor") || isKeyword("function") || isKeyword("method")) {
+      compileSubroutine()
+    }
+
+    eatSymbol() // '}'
+  }
+
+  // -------------------------------------------------------
+  // COMPILE CLASS VAR DEC
+  // -------------------------------------------------------
+  def compileClassVarDec(): Unit = {
+    val kind = eatKeyword() // 'static' | 'field'
+    val tpe = eat() // type
+    val name = eatIdentifier() // varName
+    table.define(name, tpe, kind)
+
+    while (isSymbol(",")) {
+      eatSymbol()
+      val n = eatIdentifier()
+      table.define(n, tpe, kind)
+    }
+
+    eatSymbol() // ';'
+  }
+
+  // -------------------------------------------------------
+  // COMPILE SUBROUTINE
+  // -------------------------------------------------------
+  def compileSubroutine(): Unit = {
+    table.startSubroutine()
+
+    val subroutineKind = eatKeyword() // 'constructor' | 'function' | 'method'
+    eat() // return type
+    val subroutineName = eatIdentifier()
+    val fullName = s"$className.$subroutineName"
+
+    // For a method, 'this' is the implicit argument 0
+    if (subroutineKind == "method") {
+      table.define("this", className, "arg")
+    }
+
+    eatSymbol() // '('
+    compileParameterList()
+    eatSymbol() // ')'
+
+    // Body
+    eatSymbol() // '{'
+
+    // Count the variable declarations to know how many premises
+    while (isKeyword("var")) compileVarDec()
+
+    val nLocals = table.varCount("var")
+    vm.writeFunction(fullName, nLocals)
+
+    // Prologue depending on the type of subroutine
+    subroutineKind match {
+      case "constructor" =>
+        val nFields = table.varCount("field")
+        vm.writePush("constant", nFields)
+        vm.writeCall("Memory.alloc", 1)
+        vm.writePop("pointer", 0) // anchor THIS to the allocated object
+
+      case "method" =>
+        vm.writePush("argument", 0)
+        vm.writePop("pointer", 0) // anchors THIS to the calling object
+
+      case _ => // function : nothing
+    }
+
+    compileStatements()
+    eatSymbol() // '}'
+  }
+}
