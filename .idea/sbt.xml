@@ -7,10 +7,11 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="C:\Users\panda\IdeaProjects\Principals Software\Ekronot-Targilims\project-0" />
-            <option value="C:\Users\panda\IdeaProjects\Principals Software\Ekronot-Targilims\project-1" />
-            <option value="C:\Users\panda\IdeaProjects\Principals Software\Ekronot-Targilims\project-4" />
-            <option value="C:\Users\panda\IdeaProjects\Principals Software\Ekronot-Targilims\project-5" />
+            <option value="C:\Users\guila\Desktop\mahon\troisieme annee\ekronot targilim\Ekronot-Targilims\project-0" />
+            <option value="C:\Users\guila\Desktop\mahon\troisieme annee\ekronot targilim\Ekronot-Targilims\project-0\project" />
+            <option value="C:\Users\guila\Desktop\mahon\troisieme annee\ekronot targilim\Ekronot-Targilims\project-1" />
+            <option value="C:\Users\guila\Desktop\mahon\troisieme annee\ekronot targilim\Ekronot-Targilims\project-4" />
+            <option value="C:\Users\guila\Desktop\mahon\troisieme annee\ekronot targilim\Ekronot-Targilims\project-5" />
           </set>
         </option>
         <option name="sbtVersion" value="1.11.5" />
@@ -20,8 +21,8 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$/project-5" />
         <option name="modules">
           <set>
-            <option value="C:\Users\panda\IdeaProjects\Principals Software\Ekronot-Targilims\project-5" />
-            <option value="C:\Users\panda\IdeaProjects\Principals Software\Ekronot-Targilims\project-5\project" />
+            <option value="C:\Users\guila\Desktop\mahon\troisieme annee\ekronot targilim\Ekronot-Targilims\project-5" />
+            <option value="C:\Users\guila\Desktop\mahon\troisieme annee\ekronot targilim\Ekronot-Targilims\project-5\project" />
           </set>
         </option>
         <option name="sbtVersion" value="1.11.7" />
