@@ -29,4 +29,7 @@ class VMWriter(output: PrintWriter) {
 
   def writeReturn(): Unit =
     output.println("return")
+
+  def writeComment(text: String): Unit =
+    output.println(s"// $text")
 }

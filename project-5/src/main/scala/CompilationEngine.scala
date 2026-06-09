@@ -198,6 +198,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   def compileLet(): Unit = {
     eatKeyword() // 'let'
     val varName = eatIdentifier()
+    vm.writeComment(s"let $varName")
     val isArray = isSymbol("[")
 
     if (isArray) {
@@ -234,6 +235,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // COMPILE IF
   // -------------------------------------------------------
   def compileIf(): Unit = {
+    vm.writeComment("if")
     val labelElse = newLabel(s"${className}_IF_FALSE")
     val labelEnd = newLabel(s"${className}_IF_END")
 
@@ -268,6 +270,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // COMPILE WHILE
   // -------------------------------------------------------
   def compileWhile(): Unit = {
+    vm.writeComment("while")
     val labelStart = newLabel(s"${className}_WHILE_START")
     val labelEnd = newLabel(s"${className}_WHILE_END")
 
@@ -294,6 +297,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // -------------------------------------------------------
   def compileDo(): Unit = {
     eatKeyword() // 'do'
+    vm.writeComment("do")
     compileSubroutineCall()
     eatSymbol() // ';'
     vm.writePop("temp", 0) // ignores return value
@@ -304,6 +308,7 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // -------------------------------------------------------
   def compileReturn(): Unit = {
     eatKeyword() // 'return'
+    vm.writeComment("return")
 
     if (!isSymbol(";")) {
       compileExpression()
@@ -320,37 +325,36 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
   // (used in  compileDo and compileTerm)
   // -------------------------------------------------------
   def compileSubroutineCall(): Unit = {
-    val firstName = eatIdentifier() // className | varName | subroutineName
+    val firstName = eatIdentifier()
 
     if (isSymbol(".")) {
       eatSymbol()
       val methodName = eatIdentifier()
 
-      // varname or class ?
       table.typeOf(firstName) match {
         case Some(objType) =>
-          // method call on an object: push the object as arg0
           val seg = table.segmentOf(firstName).getOrElse("local")
           val idx = table.indexOf(firstName).getOrElse(0)
           vm.writePush(seg, idx)
           eatSymbol() // '('
           val nArgs = compileExpressionList()
           eatSymbol() // ')'
+          vm.writeComment(s"call $objType.$methodName ${nArgs + 1}")
           vm.writeCall(s"$objType.$methodName", nArgs + 1)
 
         case None =>
-          // static call (function or constructor)
           eatSymbol() // '('
           val nArgs = compileExpressionList()
           eatSymbol() // ')'
+          vm.writeComment(s"call $firstName.$methodName $nArgs")
           vm.writeCall(s"$firstName.$methodName", nArgs)
       }
     } else {
-      // function call in the same class : implicite this
       vm.writePush("pointer", 0)
       eatSymbol() // '('
       val nArgs = compileExpressionList()
       eatSymbol() // ')'
+      vm.writeComment(s"call $className.$firstName ${nArgs + 1}")
       vm.writeCall(s"$className.$firstName", nArgs + 1)
     }
   }

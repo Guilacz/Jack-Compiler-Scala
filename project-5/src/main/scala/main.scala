@@ -1,7 +1,7 @@
 import scala.io.{Source, StdIn}
 import java.io.{File, PrintWriter}
 
-object Main {
+object main {
 
   def main(args: Array[String]): Unit = {
 
@@ -14,7 +14,6 @@ object Main {
 
     val inputFile = new File(path)
 
-    // accept file.jack or file that contains .jack
     val jackFiles: List[File] =
       if (inputFile.isDirectory)
         inputFile.listFiles().toList.filter(_.getName.endsWith(".jack"))
@@ -26,34 +25,54 @@ object Main {
       return
     }
 
-    jackFiles.foreach { file =>
-      compileFile(file)
-    }
+    println(s"Found ${jackFiles.length} .jack file(s):")
+    jackFiles.foreach(f => println(s"  - ${f.getName}"))
+    println()
+
+    jackFiles.foreach(compileFile)
   }
 
   def compileFile(inputFile: File): Unit = {
     val inputCode = Source.fromFile(inputFile).mkString
 
-    // Tokenize
     val tokenizer = new JackTokenizer(inputCode)
-    val tokens    = tokenizer.tokenize()
+    val tokens = tokenizer.tokenize()
 
     val projectFolderName = inputFile.getParentFile.getName
-    val baseName          = inputFile.getName.stripSuffix(".jack")
+    val baseName = inputFile.getName.stripSuffix(".jack")
 
-    // output file
+    val vmFileSide = new File(inputFile.getParentFile, s"$baseName.vm")
+
     val outputDir = new File(s"Outputs/outputs stage 5/$projectFolderName")
     if (!outputDir.exists()) outputDir.mkdirs()
+    val vmFileOut = new File(outputDir, s"$baseName.vm")
 
-    // output vm
-    val vmFile = new File(outputDir, s"$baseName.vm")
-    val vmOut  = new PrintWriter(vmFile)
+    // written in both at the same time
+    val writerSide = new PrintWriter(vmFileSide)
+    val writerOut = new PrintWriter(vmFileOut)
+    val vmOut = new PrintWriter(writerSide) {
+      override def println(x: String): Unit = {
+        writerSide.println(x)
+        writerOut.println(x)
+      }
 
-    val engine = new CompilationEngine(tokens, vmOut)
-    engine.compileClass()
+      override def close(): Unit = {
+        writerSide.close()
+        writerOut.close()
+      }
+    }
 
-    vmOut.close()
-
-    println(s"VM DONE -> ${vmFile.getPath}")
+    try {
+      val engine = new CompilationEngine(tokens, vmOut)
+      engine.compileClass()
+      println(s"${inputFile.getName}")
+      println(s"    -> ${vmFileSide.getPath}")
+      println(s"    -> ${vmFileOut.getPath}")
+    } catch {
+      case e: Exception =>
+        println(s"✗ ${inputFile.getName} : ERROR - ${e.getMessage}")
+    } finally {
+      vmOut.close()
+    }
   }
 }
