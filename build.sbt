@@ -26,3 +26,10 @@ lazy val project0 = (project in file("project-0"))
     name := "project-0",
     scalaVersion := "3.3.7"
   )
+
+lazy val project5 = (project in file("project-5"))
+  .dependsOn(project2)
+  .settings(
+    name := "project-5",
+    scalaVersion := "3.3.7"
+  )
