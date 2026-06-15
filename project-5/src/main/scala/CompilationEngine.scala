@@ -244,8 +244,8 @@ class CompilationEngine(tokens: List[Token], output: PrintWriter) {
     compileExpression()
     eatSymbol() // ')'
 
-    vm.writeArithmetic("not")
-    vm.writeIf(labelElse)
+    vm.writeArithmetic("not") //True = -1 and false =0 => true=0 and false=-1
+    vm.writeIf(labelElse) //if not 0 got to label
 
     eatSymbol() // '{'
     compileStatements()
